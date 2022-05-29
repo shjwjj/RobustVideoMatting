@@ -14,7 +14,7 @@ Official repository for the paper [Robust High-Resolution Video Matting with Tem
 * [Sep 16 2021] Code is re-released under GPL-3.0 license.
 * [Aug 25 2021] Source code and pretrained models are published.
 * [Jul 27 2021] Paper is accepted by WACV 2022.
-
+*** [May 29 2022] add gstreamer push stream to rtsp server
 <br>
 
 ## Showreel
