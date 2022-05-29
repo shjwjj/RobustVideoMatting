@@ -1,4 +1,5 @@
-import av
+# import av
+import cv2
 import os
 import pims
 import numpy as np
@@ -9,8 +10,10 @@ from PIL import Image
 
 class VideoReader(Dataset):
     def __init__(self, path, transform=None):
-        self.video = pims.PyAVVideoReader(path)
-        self.rate = self.video.frame_rate
+        # self.video = pims.PyAVVideoReader(path)
+        self.video = cv2.VideoCapture(0)
+        # self.rate = self.video.frame_rate
+        self.rate = 30
         self.transform = transform
         
     @property
@@ -18,38 +21,40 @@ class VideoReader(Dataset):
         return self.rate
         
     def __len__(self):
+        return 1000000
         return len(self.video)
         
     def __getitem__(self, idx):
-        frame = self.video[idx]
+        # frame = self.video[idx]
+        _, frame = self.video.read()
         frame = Image.fromarray(np.asarray(frame))
         if self.transform is not None:
             frame = self.transform(frame)
         return frame
 
 
-class VideoWriter:
-    def __init__(self, path, frame_rate, bit_rate=1000000):
-        self.container = av.open(path, mode='w')
-        self.stream = self.container.add_stream('h264', rate=round(frame_rate))
-        self.stream.pix_fmt = 'yuv420p'
-        self.stream.bit_rate = bit_rate
+# class VideoWriter:
+#     def __init__(self, path, frame_rate, bit_rate=1000000):
+#         self.container = av.open(path, mode='w')
+#         self.stream = self.container.add_stream('h264', rate=round(frame_rate))
+#         self.stream.pix_fmt = 'yuv420p'
+#         self.stream.bit_rate = bit_rate
     
-    def write(self, frames):
-        # frames: [T, C, H, W]
-        self.stream.width = frames.size(3)
-        self.stream.height = frames.size(2)
-        if frames.size(1) == 1:
-            frames = frames.repeat(1, 3, 1, 1) # convert grayscale to RGB
-        frames = frames.mul(255).byte().cpu().permute(0, 2, 3, 1).numpy()
-        for t in range(frames.shape[0]):
-            frame = frames[t]
-            frame = av.VideoFrame.from_ndarray(frame, format='rgb24')
-            self.container.mux(self.stream.encode(frame))
+#     def write(self, frames):
+#         # frames: [T, C, H, W]
+#         self.stream.width = frames.size(3)
+#         self.stream.height = frames.size(2)
+#         if frames.size(1) == 1:
+#             frames = frames.repeat(1, 3, 1, 1) # convert grayscale to RGB
+#         frames = frames.mul(255).byte().cpu().permute(0, 2, 3, 1).numpy()
+#         for t in range(frames.shape[0]):
+#             frame = frames[t]
+#             frame = av.VideoFrame.from_ndarray(frame, format='rgb24')
+#             self.container.mux(self.stream.encode(frame))
                 
-    def close(self):
-        self.container.mux(self.stream.encode())
-        self.container.close()
+#     def close(self):
+#         self.container.mux(self.stream.encode())
+#         self.container.close()
 
 
 class ImageSequenceReader(Dataset):
